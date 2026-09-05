@@ -10,11 +10,24 @@ aceptación de cada página de Notion delimitan el alcance de cada tarea.
 | Rol | Dificultades permitidas | Worktree | Rama |
 | --- | --- | --- | --- |
 | Coordinador | No implementa producto | `/home/angel/Documentos/proyect1` | `main` |
-| Implementador Hard/Standard | `hard`, `standard` | `/home/angel/Documentos/proyect1-hard-standard` | `agent/hard-standard` |
-| Implementador Imposible | `imposible` | `/home/angel/Documentos/proyect1-imposible` | `agent/imposible` |
+| Implementador Hard/Standard | `hard`, `standard` | Temporal creado por el coordinador: `/home/angel/Documentos/gnotes-agent-worktrees/<ID-DE-TAREA>` | `agent/<ID-DE-TAREA>` (nueva) |
+| Implementador Imposible | `imposible` | Temporal creado por el coordinador: `/home/angel/Documentos/gnotes-agent-worktrees/<ID-DE-TAREA>` | `agent/<ID-DE-TAREA>` (nueva) |
 
-- Un implementador modifica exclusivamente su propio worktree y su propia rama.
+- Los implementadores JAMÁS crean, eliminan, reúsan ni modifican worktrees.
+  Solo trabajan dentro del worktree temporal que el coordinador les asigna.
+- Para cada tarea, el coordinador crea un worktree temporal limpio desde `main`
+  integrado, fuera del repositorio, bajo
+  `/home/angel/Documentos/gnotes-agent-worktrees/<ID-DE-TAREA>`, con una rama
+  nueva `agent/<ID-DE-TAREA>`. Ese worktree contiene `AGENTS.md`.
+- Los worktrees antiguos `/home/angel/Documentos/proyect1-hard-standard` y
+  `/home/angel/Documentos/proyect1-imposible` y sus ramas se preservan como
+  cuarentena y no se asignan a ninguna tarea.
+- Un implementador modifica exclusivamente el worktree temporal asignado y su
+  propia rama `agent/<ID-DE-TAREA>`.
 - `main` solo lo modifica el coordinador al integrar una entrega aceptada.
+- El coordinador solo puede retirar un worktree temporal que él creó después de
+  integrar o bloquear la entrega y comprobar que no quedan cambios sin
+  confirmar en ese worktree.
 - No usar `git reset --hard`, `git checkout --`, force-push, ni borrar trabajo de
   otro agente.
 - Nunca versionar `.opencode/`, `node_modules/`, artefactos de build, secretos,
@@ -99,6 +112,10 @@ criterio de aceptación pendiente cambie la semántica de producto.
 
 ## Paralelismo y orden
 
+- El máximo simultáneo es exactamente tres procesos de OpenCode: un coordinador
+  y hasta dos implementadores, uno para hard/standard y uno para imposible.
+  Ningún implementador anida subagentes ni inicia procesos OpenCode.
+- Si las dependencias no permiten paralelismo, se usa menos de ese máximo.
 - Hard/Standard e Imposible pueden trabajar en paralelo únicamente si sus
   dependencias ya están en `Hecha` y no cambian la misma frontera o los mismos
   archivos.
@@ -127,7 +144,8 @@ Todo agente nuevo recibe además este texto:
 
 ```text
 Lee AGENTS.md y la página de Notion de tu tarea antes de modificar archivos.
-Trabaja solo en tu worktree. Reclama una única tarea elegible para tu dificultad.
+Trabaja solo en tu worktree temporal asignado; no crees, elimines, reúses ni
+modifiques worktrees. Reclama una única tarea elegible para tu dificultad.
 No crees un commit hasta terminar la unidad funcional y pasar su puerta de calidad.
 Si te bloqueas, no inventes una solución: actualiza el estado y entrega HANDOFF
 BLOQUEADA sin commit. Al terminar, entrega el HANDOFF exacto; no fusiones ramas,
