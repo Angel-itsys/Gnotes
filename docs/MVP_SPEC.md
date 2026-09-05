@@ -1,6 +1,6 @@
 # Especificación del MVP — Sistema de progresión gestionada
 
-La arquitectura detallada por subsistema está en [`architecture/README.md`](../architecture/README.md).
+La arquitectura detallada por subsistema está en [`docs/architecture/README.md`](architecture/README.md).
 
 ## 1. Objetivo
 
