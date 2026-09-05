@@ -19,6 +19,11 @@ aceptación de cada página de Notion delimitan el alcance de cada tarea.
   otro agente.
 - Nunca versionar `.opencode/`, `node_modules/`, artefactos de build, secretos,
   tokens, rutas personales o resultados efímeros.
+- Todo agente, antes de modificar archivos, debe ejecutar `git status --short`
+  para detectar cambios preexistentes fuera de su alcance. Esos cambios son
+  propiedad ajena e inmutables: debe preservarlos sin restaurarlos, borrarlos,
+  moverlos, formatearlos, agregarlos al índice ni incluirlos en ningún commit,
+  y debe reportarlos en su HANDOFF si colisionan con su tarea.
 
 ## Selección y ciclo de una tarea
 
