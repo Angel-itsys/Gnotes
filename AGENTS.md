@@ -1,9 +1,23 @@
 # Contrato de ejecución autónoma
 
 Este archivo es obligatorio para el coordinador y todos los agentes de implementación.
-La fuente de verdad del backlog es Notion, data source
-`3cf5320c-26ad-80bf-8c85-000b83b1d597`. La arquitectura y los criterios de
+La fuente de verdad del backlog es Notion, base
+`3d25320c-26ad-808a-b8da-d80bc0a1fb91`, data source
+`3d25320c-26ad-8080-9418-000b94ddba2f`. La arquitectura y los criterios de
 aceptación de cada página de Notion delimitan el alcance de cada tarea.
+
+## Esquema operativo de Notion
+
+- `Name`: ID y resumen imperativo de la tarea.
+- `Dificultad`: slot de implementación: `standard`, `hard` o `imposible`.
+- `Modelo`: identificador exacto `provider/model` aceptado por la CLI de OpenCode.
+- `Estado`: `Backlog`, `En curso`, `En revisión`, `Hecha` o `Bloqueada`.
+- `Paralelismo`: `on` solo si la frontera de archivos permite un worktree concurrente;
+  `off` obliga a ejecutarla sin otra entrega que toque su frontera.
+
+Las dependencias, la variante de modelo, la frontera de archivos, los comandos de
+prueba y el formato de entrega están escritos en el cuerpo de cada página y son
+obligatorios. El coordinador los verifica leyendo la página completa.
 
 ## Roles y worktrees
 
@@ -19,6 +33,9 @@ aceptación de cada página de Notion delimitan el alcance de cada tarea.
   integrado, fuera del repositorio, bajo
   `/home/angel/Documentos/gnotes-agent-worktrees/<ID-DE-TAREA>`, con una rama
   nueva `agent/<ID-DE-TAREA>`. Ese worktree contiene `AGENTS.md`.
+- Antes de crearlo, el coordinador comprueba que no existan ni la ruta ni la rama y
+  ejecuta desde el repositorio principal:
+  `git worktree add -b agent/<ID-DE-TAREA> /home/angel/Documentos/gnotes-agent-worktrees/<ID-DE-TAREA> main`.
 - Los worktrees antiguos `/home/angel/Documentos/proyect1-hard-standard` y
   `/home/angel/Documentos/proyect1-imposible` y sus ramas se preservan como
   cuarentena y no se asignan a ninguna tarea.
@@ -40,13 +57,14 @@ aceptación de cada página de Notion delimitan el alcance de cada tarea.
 
 ## Selección y ciclo de una tarea
 
-1. Consultar Notion y elegir solo una tarea asignada al rol cuyo `estado` sea
-   `Backlog` y cuyas dependencias estén todas en `Hecha`.
+1. Consultar el data source indicado y elegir solo una tarea asignada al rol cuya
+   `Dificultad` corresponda, cuyo `Estado` sea `Backlog` y cuyas dependencias
+   enumeradas en el cuerpo estén todas en `Hecha`.
 2. Leer la página completa, las fuentes de arquitectura indicadas y este archivo.
 3. Cambiar únicamente esa tarea a `En curso`; no reclamar dos tareas a la vez.
 4. Implementar sin ampliar alcance. Si aparece una decisión de propietario, de
-   hardware o de producto no resuelta, detenerse, documentar evidencia y marcar
-   `Bloqueada`; no inventarla.
+   hardware o de producto no resuelta, detenerse, documentar la evidencia en el
+   HANDOFF, marcar `Bloqueada` y entregar HANDOFF `BLOQUEADA`; no inventarla.
 5. Ejecutar todas las pruebas obligatorias de la página más las pruebas
    relevantes del código tocado.
 6. Entregar al coordinador un HANDOFF estructurado. No marcar `Hecha` ni liberar
@@ -103,7 +121,8 @@ HANDOFF
 Para una entrega `LISTA`, el coordinador vuelve a ejecutar la puerta de calidad,
 integra por avance rápido cuando sea posible (para preservar el commit del
 implementador), actualiza Notion a `En revisión`, y después de la verificación
-en `main` la marca `Hecha` con el hash final. Solo entonces habilita las tareas
+en `main` registra el hash final en el cuerpo de la página y la marca `Hecha`.
+Solo entonces habilita las tareas
 dependientes. Si el remoto está autenticado, hace `git push origin main` después
 de cada integración aprobada.
 
@@ -124,6 +143,16 @@ criterio de aceptación pendiente cambie la semántica de producto.
 - El coordinador aplica el modelo y la variante indicados en Notion para cada
   despacho. No se reserva un modelo costoso para una tarea `standard` si Notion
   asigna uno más económico.
+- Modelos verificados con OpenCode 1.18.11 y el proveedor autenticado `opencode`:
+
+  | agente | modelo | variante | invocación |
+  | --- | --- | --- | --- |
+  | `imposible` | `opencode/muse-spark-1.3-contributor-free` | `xhigh` | `opencode run -m opencode/muse-spark-1.3-contributor-free --variant xhigh` |
+  | `hard` | `opencode/ling-3.0-flash-fin-free` | `high` | `opencode run -m opencode/ling-3.0-flash-fin-free --variant high` |
+  | `standard` | `opencode/nemotron-3.5-lightning-free` | `default` | `opencode run -m opencode/nemotron-3.5-lightning-free` |
+
+  Si una combinación deja de aparecer en `opencode models opencode --verbose`,
+  el coordinador no despacha la tarea: la marca `Bloqueada` con esa evidencia.
 - Las validaciones físicas de Pi/SSD, red y energía se ejecutan solo en el
   hardware objetivo. Una medición de escritorio no se presenta como evidencia
   de Raspberry Pi.
